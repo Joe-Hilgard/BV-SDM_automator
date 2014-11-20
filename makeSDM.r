@@ -3,7 +3,7 @@
 
 # load predictor conditions:
 conditions = read.delim("conditions.txt", stringsAsFactors=F)
-protocol = "Congruency"
+protocol = "CurrentTrial"
 # First, name predictors & specify timepoints/predictor:
 p = c(conditions$predictor); 
 k = 10;
@@ -12,6 +12,8 @@ TRlength = 2000
 predNames = paste(rep(p, each=k), "_D", rep(0:(k-1), length(p)), sep="")
 # Specify number of volumes:
 t = 158
+# badbolds vector for IDing SDMs featuring NAs
+badbolds = c()
 
 # read in the data
 setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
@@ -55,6 +57,7 @@ for (j in 1:length(p)) {
 # NAs in sdm therefore represent a real failure
 # DEBUG COMMAND
 print (sum(complete.cases(sdm)))
+if (sum(complete.cases(sdm)) < 158) badbolds = c(badbolds, paste("Subject", sub, "Bold", bold))
 #if (sum(complete.cases(sdm)) < 158) break
 
 # Okay! I think we're there. Just need to export it to a file and add the header.
