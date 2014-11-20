@@ -14,7 +14,7 @@ predNames = paste(rep(p, each=k), "_D", rep(0:(k-1), length(p)), sep="")
 t = 158
 
 # read in the data
-setwd("C:/data_2014/Thesis/prt_sdm_automation/My laboratory")
+setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
 megadata = read.delim("fMRI_grand-dataset.txt", skip=1) # read in all the data at once
 # then restrict it to just one subject's one bold
   # A loop would start about here, 
@@ -33,6 +33,7 @@ dat$TR = (dat$Mask.OnsetTime - dat$ready.RTTime) / TRlength - 1 # Mask.OnsetTime
 dat$TR = floor(dat$TR)
 
 codes = vector("list", length(p))
+# Fetch TRs that match each condition
 for (i in 1:length(conditions$condition)) {
   command = paste("which(", conditions$condition[i], ")")
   logicalTest = eval(parse(text=command))
@@ -40,7 +41,7 @@ for (i in 1:length(conditions$condition)) {
 }
 
 # Populate values of SDM
-print(paste("Populating values of SDM file!"))
+#print(paste("Populating values of SDM file!"))
 for (j in 1:length(p)) {
   for (i in 1:k) {
     peak = codes[[j]] + (i - 1)  # nudge it up for lagged predictors
@@ -52,12 +53,15 @@ for (j in 1:length(p)) {
 }
 
 # NAs in sdm therefore represent a real failure
+# DEBUG COMMAND
+print (sum(complete.cases(sdm)))
+#if (sum(complete.cases(sdm)) < 158) break
 
 # Okay! I think we're there. Just need to export it to a file and add the header.
 zeroes = paste(rep(0, 3-nchar(sub)), sep="", collapse="")
 subSuffix = paste(zeroes, sub, sep="")
-exportName = paste("WIT", subSuffix, "_b", bold, "_", protocol, ".sdm", sep="")
-print(paste("Exporting to file", exportName))
+exportName = paste("./sdms/","WIT", subSuffix, "_b", bold, "_", protocol, ".sdm", sep="")
+#print(paste("Exporting to file", exportName))
 cat("FileVersion:             1
     
     NrOfPredictors:          30
@@ -66,7 +70,7 @@ cat("FileVersion:             1
     FirstConfoundPredictor:  1
     
     255 50 50   50 255 50   50 50 255   255 255 0   255 0 255   0 255 255", 
-    file=exportname
+    file=exportName
 )
 write.table(sdm, file=exportName, row.names=F, append=T)
   }
