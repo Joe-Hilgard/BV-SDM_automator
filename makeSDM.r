@@ -1,6 +1,6 @@
 # It seems like this will be easier to make from the ePrime file than from a PRT.
 # Check lines 35+ and 50+ for things that change according to length of p!
-
+setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
 # load predictor conditions:
 conditions = read.delim("conditions.txt", stringsAsFactors=F)
 protocol = "CurrentTrial"
@@ -14,10 +14,11 @@ predNames = paste(rep(p, each=k), "_D", rep(0:(k-1), length(p)), sep="")
 t = 158
 # badbolds vector for IDing SDMs featuring NAs
 badbolds = c()
-
+# Fourier confounds
+fourier = read.table("./movement-files/Modified_Fourier.sdm", skip=8, header=T)
 # read in the data
-setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
 megadata = read.delim("fMRI_grand-dataset.txt", skip=1) # read in all the data at once
+
 # then restrict it to just one subject's one bold
   # A loop would start about here, 
 for (sub in unique(megadata$Subject)) {
@@ -60,9 +61,21 @@ print (sum(complete.cases(sdm)))
 if (sum(complete.cases(sdm)) < 158) badbolds = c(badbolds, paste("Subject", sub, "Bold", bold))
 #if (sum(complete.cases(sdm)) < 158) break
 
+# # Add motion confounds and fourier confounds. (WIP)
+# zeroes = paste(rep(0, 3-nchar(sub)), sep="", collapse="")
+# subSuffix = paste(zeroes, sub, sep="")
+# motionFileDir = "./movement-files/"
+# motionFileRTC = paste("WIT", subSuffix, "_b", bold, "_3DMC.rtc", sep="")
+# motionFileSDM = paste("WIT", subSuffix, "_b", bold, "_3DMC.sdm", sep="")
+# if (length(list.files(motionFileDir, pattern=motionFileRTC)) > 0) {
+#   motion = read.table(file=paste(motionFileDir, motionFileRTC, sep=""), skip=5, header=T)
+# } else {
+#   motion = read.table(file=paste(motionFileDir, motionFileSDM, sep=""), skip=8, header=T)
+# }
+
+sdm = data.frame(sdm, motion, fourier)
+
 # Okay! I think we're there. Just need to export it to a file and add the header.
-zeroes = paste(rep(0, 3-nchar(sub)), sep="", collapse="")
-subSuffix = paste(zeroes, sub, sep="")
 exportName = paste("./sdms/","WIT", subSuffix, "_b", bold, "_", protocol, ".sdm", sep="")
 #print(paste("Exporting to file", exportName))
 cat("FileVersion:             1
@@ -70,7 +83,7 @@ cat("FileVersion:             1
     NrOfPredictors:          30
     NrOfDataPoints:          158
     IncludesConstant:        0
-    FirstConfoundPredictor:  1
+    FirstConfoundPredictor:  31
     
     255 50 50   50 255 50   50 50 255   255 255 0   255 0 255   0 255 255", 
     file=exportName
