@@ -61,17 +61,23 @@ print (sum(complete.cases(sdm)))
 if (sum(complete.cases(sdm)) < 158) badbolds = c(badbolds, paste("Subject", sub, "Bold", bold))
 #if (sum(complete.cases(sdm)) < 158) break
 
-# # Add motion confounds and fourier confounds. (WIP)
-# zeroes = paste(rep(0, 3-nchar(sub)), sep="", collapse="")
-# subSuffix = paste(zeroes, sub, sep="")
-# motionFileDir = "./movement-files/"
-# motionFileRTC = paste("WIT", subSuffix, "_b", bold, "_3DMC.rtc", sep="")
-# motionFileSDM = paste("WIT", subSuffix, "_b", bold, "_3DMC.sdm", sep="")
-# if (length(list.files(motionFileDir, pattern=motionFileRTC)) > 0) {
-#   motion = read.table(file=paste(motionFileDir, motionFileRTC, sep=""), skip=5, header=T)
-# } else {
-#   motion = read.table(file=paste(motionFileDir, motionFileSDM, sep=""), skip=8, header=T)
-# }
+# Add motion confounds and fourier confounds. (WIP)
+zeroes = paste(rep(0, 3-nchar(sub)), sep="", collapse="")
+subSuffix = paste(zeroes, sub, sep="")
+motionFileDir = "./movement-files/"
+motionFileRTC = paste("WIT", subSuffix, "_b", bold, "_3DMC.rtc", sep="")
+motionFileSDM = paste("WIT", subSuffix, "_b", bold, "_3DMC.sdm", sep="")
+if (length(list.files(motionFileDir, pattern=motionFileRTC)) > 0) {
+  #motion = read.table(file=paste(motionFileDir, motionFileRTC, sep=""), skip=5, header=T)
+  motion = read.delim(file=paste(motionFileDir, motionFileRTC, sep=""), #widths=rep(9, 6),
+                      skip=5, sep=" ")
+  } else {
+  #motion = read.table(file=paste(motionFileDir, motionFileSDM, sep=""), skip=8, header=T)
+  motion = read.fwf(file=paste(motionFileDir, motionFileSDM, sep=""), widths=rep(12, 6),
+                    skip=9, header=F,
+                    col.names=c("Translation_BV-X_mm", "Translation_BV-Y_mm", "Translation_BV-Z_mm",
+                                "Rotation_BV-X_deg", "Rotation_BV-Y_deg", "Rotation_BV-Z_deg"))
+  }
 
 sdm = data.frame(sdm, motion, fourier)
 
