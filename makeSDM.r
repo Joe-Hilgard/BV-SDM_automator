@@ -1,5 +1,6 @@
 # It seems like this will be easier to make from the ePrime file than from a PRT.
 # Check lines 35+ and 50+ for things that change according to length of p!
+# Also header info at line 90+
 setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
 # load predictor conditions:
 conditions = read.delim("conditions.txt", stringsAsFactors=F)
@@ -16,6 +17,7 @@ t = 158
 badbolds = c()
 # Fourier confounds
 fourier = read.table("./movement-files/Modified_Fourier.sdm", skip=8, header=T)
+fourier = fourier[,1:4] # Removing the "Constant" column b/c I think it results in singular matrix
 # read in the data
 megadata = read.delim("fMRI_grand-dataset.txt", skip=1) # read in all the data at once
 
@@ -80,18 +82,20 @@ if (length(list.files(motionFileDir, pattern=motionFileRTC)) > 0) {
   }
 
 sdm = data.frame(sdm, motion, fourier)
+#sdm = format(sdm, nsmall=6) # I think BV is barfing because columns are 0 1 instead of 0.000000 1.000000
 
 # Okay! I think we're there. Just need to export it to a file and add the header.
 exportName = paste("./sdms/","WIT", subSuffix, "_b", bold, "_", protocol, ".sdm", sep="")
-#print(paste("Exporting to file", exportName))
+#print(paste("Exporting to file", exportName)) # Check NrOfPredictors and FirstConfoundPredictor!!
 cat("FileVersion:             1
     
-    NrOfPredictors:          30
+    NrOfPredictors:          50
     NrOfDataPoints:          158
     IncludesConstant:        0
-    FirstConfoundPredictor:  31
+    FirstConfoundPredictor:  41
     
-    255 50 50   50 255 50   50 50 255   255 255 0   255 0 255   0 255 255", 
+    255 50 50   50 255 50   50 50 255   255 255 0   255 0 255   0 255 255
+    ", 
     file=exportName
 )
 write.table(sdm, file=exportName, row.names=F, append=T)
