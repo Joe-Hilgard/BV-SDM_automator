@@ -1,6 +1,13 @@
 # It seems like this will be easier to make from the ePrime file than from a PRT.
 # Check lines 35+ and 50+ for things that change according to length of p!
 # Also header info at line 90+
+
+# What's the deal with these ones that come back as zero complete cases?
+  # It's because they have zero trials that meet one of the conditions, e.g.
+  # They have zero too-slow trials! Not sure what I should do about that.
+  # If I drop that predictor, I add noise;
+    # If I don't drop it, I have singularity.
+
 setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
 # load predictor conditions:
 conditions = read.delim("conditions.txt", stringsAsFactors=F)
@@ -19,7 +26,7 @@ badbolds = c()
 fourier = read.table("./movement-files/Modified_Fourier.sdm", skip=8, header=T)
 fourier = fourier[,1:4] # Removing the "Constant" column b/c I think it results in singular matrix
 # read in the data
-megadata = read.delim("fMRI_grand-dataset.txt", skip=1) # read in all the data at once
+megadata = read.delim("eprime_thesis_1fix.txt") # read in all the data at once
 
 # then restrict it to just one subject's one bold
   # A loop would start about here, 
@@ -35,7 +42,7 @@ sdm = matrix(nrow=t, ncol=length(predNames), dimnames=list(1:t, predNames))
 # if the codes are mutually exclusive & exhaustive they will sum to 64
   # but can we count on that? no, i'll make a list
 dat$TR = (dat$Mask.OnsetTime - dat$ready.RTTime) / TRlength - 1 # Mask.OnsetTime, or ITI.OnsetTime??
-dat$TR = floor(dat$TR)
+dat$TR = round(dat$TR)
 
 codes = vector("list", length(p))
 # Fetch TRs that match each condition
@@ -101,3 +108,4 @@ cat("FileVersion:             1
 write.table(sdm, file=exportName, row.names=F, append=T)
   }
 }
+write(badbolds, file="badbolds.txt", ncolumns=1)
