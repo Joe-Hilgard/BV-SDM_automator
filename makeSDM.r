@@ -7,6 +7,7 @@
   # They have zero too-slow trials! Not sure what I should do about that.
   # If I drop that predictor, I add noise;
     # If I don't drop it, I have singularity.
+# It seems that BV can handle it if I drop that predictor in just that one subject's SDM file.
 
 setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
 # load predictor conditions:
@@ -65,12 +66,17 @@ for (j in 1:length(p)) {
 }
 
 # NAs in sdm therefore represent a real failure
+# Delete columns with NAs (e.g. no too-slow trials)
+if (sum(complete.cases(t(sdm))) < 40) print(paste("Deleting columns from subject", sub, "bold", bold))
+sdm = sdm[, complete.cases(t(sdm))] # returns only complete columns
+
 # DEBUG COMMAND
 print (sum(complete.cases(sdm)))
 if (sum(complete.cases(sdm)) < 158) badbolds = c(badbolds, paste("Subject", sub, "Bold", bold))
 #if (sum(complete.cases(sdm)) < 158) break
 
-# Add motion confounds and fourier confounds. (WIP)
+# Add motion confounds and fourier confounds. 
+firstConfoundPredictor = dim(sdm)[2] + 1
 zeroes = paste(rep(0, 3-nchar(sub)), sep="", collapse="")
 subSuffix = paste(zeroes, sub, sep="")
 motionFileDir = "./movement-files/"
@@ -96,11 +102,10 @@ exportName = paste("./sdms/","WIT", subSuffix, "_b", bold, "_", protocol, ".sdm"
 #print(paste("Exporting to file", exportName)) # Check NrOfPredictors and FirstConfoundPredictor!!
 cat("FileVersion:             1
     
-    NrOfPredictors:          50
+    NrOfPredictors:          ", dim(sdm)[2],"
     NrOfDataPoints:          158
     IncludesConstant:        0
-    FirstConfoundPredictor:  41
-    
+    FirstConfoundPredictor:   ",  firstConfoundPredictor, "    
     255 50 50   50 255 50   50 50 255   255 255 0   255 0 255   0 255 255
     ", 
     file=exportName
