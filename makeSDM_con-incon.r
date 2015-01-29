@@ -17,7 +17,7 @@ TooSlowConfound = T # set to T to treat TooSlow condition as confound. May allow
 setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
 # load predictor conditions:
 conditions = read.delim("conditions-Con-Incon.txt", stringsAsFactors=F)
-protocol = "CurrentTrial"
+protocol = "Con-Incon"
 # First, name predictors & specify timepoints/predictor:
 p = c(conditions$predictor); 
 k = 9;
@@ -28,6 +28,8 @@ predNames = paste(rep(p, each=k), "_D", rep(0:(k-1), length(p)), sep="")
 t = 158
 # badbolds vector for IDing SDMs featuring NAs
 badbolds = c()
+# badMotion data frame for IDing SDMs featuring excess raw motion
+badMotion = data.frame(NULL)
 # Fourier confounds
 fourier = read.table("./movement-files/Modified_Fourier.sdm", skip=8, header=T)
 fourier = fourier[,1:4] # Removing the "Constant" column b/c I think it results in singular matrix
@@ -106,8 +108,12 @@ if (length(list.files(motionFileDir, pattern=motionFileRTC)) > 0) {
 
 # Check range of motion
 check = apply(motion, 2, FUN=max) - apply(motion, 2, FUN=min)
-if (sum(check>3)>0) print("Excess motion in subject ", sub, ", bold ", bold, 
-                          ", column ", colnames(check)[check>3], sep="")
+if (sum(check>3)>0) {
+  print(paste("Excess motion in subject ", sub, ", bold ", bold, 
+              ", column ", names(check)[check>3], sep=""))
+  temp = data.frame("subject" = sub, "bold"=bold, "column"=names(check)[check>3])
+  badMotion = rbind(badMotion, temp)
+}
 
 # generate first derivatives
 # Could add a check here for spikes (e.g. throw an alarm if dx/dt exceeds 1 at any point)
@@ -117,8 +123,18 @@ motion.deriv = scale(motion.deriv) # convert to z-scores
 # plot(1:dim(motion)[1], motion.deriv[,1], typ='l')
 colnames(motion.deriv) = paste(names(motion), "_dt", sep="")
 
+# Fetch VOI motion confound, make 1st derivatives, and append
+vvdFileName = paste("./vvd-files/WIT", subSuffix, "_confoundVOI.vvd", sep="")
+startRow = 1+158*(bold-1); endRow = startRow+157
+vvd = read.delim(vvdFileName, sep="", stringsAsFactors=F)[startRow:endRow,]
+vvd.deriv = apply(vvd, 2, FUN=diff)
+vvd.deriv = rbind(vvd.deriv, 0)
+vvd.deriv = scale(vvd.deriv)
+colnames(vvd.deriv) = paste(names(vvd), "_dt", sep="")
+vvd = scale(vvd)
+
 # Append the confounds
-sdm = data.frame(sdm, motion, motion.deriv, fourier)
+sdm = data.frame(sdm, motion, motion.deriv, vvd, vvd.deriv, fourier)
 
 # Okay! I think we're there. Just need to export it to a file and add the header.
 exportName = paste("./sdms_con-incon/","WIT", subSuffix, "_b", bold, "_", protocol, ".sdm", sep="")
@@ -137,3 +153,4 @@ write.table(sdm, file=exportName, row.names=F, append=T)
   }
 }
 write(badbolds, file="badbolds.txt", ncolumns=1)
+write.table(badMotion, file="badMotion.txt", sep="\t", row.names=F)
