@@ -1,0 +1,13 @@
+Double-check accuracy of PRT matrix (e.g. are trials ending up on correct TRs?) by hand vs. by script vs by BV.
+
+Double-check accuracy of motion confounds etc. Compare .vvd file against selecting a single VOI, a single VTC, "Show Timecourse", "Save RTC."
+
+Scale raw motion predictor into z-scores, not just _dt into z-scores.
+
+Conduct 2x2x2+1 analysis
+
+Conduct sanity check by making VOI in V1 area. VOI -> VOI options - > get timecourse for each condition. Look for clear peaks.
+
+Does e-prime log subject response post-deadline?
+
+
