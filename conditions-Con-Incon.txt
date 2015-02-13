@@ -1,0 +1,3 @@
+predictor	condition
+Congruent	"dat$TrialType %in% c('BlackGun', 'WhiteTool')"
+Incongruent	"dat$TrialType %in% c('WhiteGun', 'BlackTool')"

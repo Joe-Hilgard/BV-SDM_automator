@@ -1,0 +1,5 @@
+predictor	condition
+CongruentHit	"dat$TrialType %in% c('BlackGun', 'WhiteTool') & (dat$Probe.ACC == 1) & dat$feedbackmask == 'fast'"
+IncongruentHit	"dat$TrialType %in% c('WhiteGun', 'BlackTool') & (dat$Probe.ACC == 1) & dat$feedbackmask == 'fast'"
+Miss	"dat$Probe.ACC == 0 & dat$feedbackmask == 'fast'"
+TooSlow	"dat$feedbackmask == 'slow'"

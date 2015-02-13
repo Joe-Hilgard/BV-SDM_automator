@@ -14,7 +14,7 @@ removeDeadCols = T # set to T if you think BV can handle different numbers of co
 TooSlowConfound = T # set to T to treat TooSlow condition as confound. May allow diff #col across files.
 # Setting both these to TRUE does keep BV from barking at me, this is promising. 
 
-setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
+# setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
 # load predictor conditions:
 conditions = read.delim("conditions-Con-Incon.txt", stringsAsFactors=F)
 protocol = "Con-Incon"
@@ -115,6 +115,9 @@ if (sum(check>3)>0) {
   badMotion = rbind(badMotion, temp)
 }
 
+# Standardize the motion
+motion = scale(motion)
+
 # generate first derivatives
 # Could add a check here for spikes (e.g. throw an alarm if dx/dt exceeds 1 at any point)
 motion.deriv = apply(motion, 2, FUN=diff)
@@ -123,7 +126,7 @@ motion.deriv = scale(motion.deriv) # convert to z-scores
 # plot(1:dim(motion)[1], motion.deriv[,1], typ='l')
 colnames(motion.deriv) = paste(names(motion), "_dt", sep="")
 
-# Fetch VOI motion confound, make 1st derivatives, and append
+# Fetch VOI motion confound, make 1st derivatives of VOI, and append
 vvdFileName = paste("./vvd-files/WIT", subSuffix, "_confoundVOI.vvd", sep="")
 startRow = 1+158*(bold-1); endRow = startRow+157
 vvd = read.delim(vvdFileName, sep="", stringsAsFactors=F)[startRow:endRow,]
@@ -135,6 +138,9 @@ vvd = scale(vvd)
 
 # Append the confounds
 sdm = data.frame(sdm, motion, motion.deriv, vvd, vvd.deriv, fourier)
+
+# Check matrix rank
+# stopifnot(qr(sdm)$rank == 40)
 
 # Okay! I think we're there. Just need to export it to a file and add the header.
 exportName = paste("./sdms_con-incon/","WIT", subSuffix, "_b", bold, "_", protocol, ".sdm", sep="")

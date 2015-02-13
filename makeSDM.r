@@ -8,6 +8,11 @@
   # If I drop that predictor, I add noise;
     # If I don't drop it, I have singularity.
 # It seems that BV can handle it if I drop that predictor in just that one subject's SDM file.
+# No, it can't, but maybe I can include it as a confound instead of a predictor
+
+removeDeadCols = T # set to T if you think BV can handle different numbers of columns across SDM files.
+TooSlowConfound = T # set to T to treat TooSlow condition as confound. May allow diff #col across files.
+# Setting both these to TRUE does keep BV from barking at me, this is promising. 
 
 setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
 # load predictor conditions:
@@ -66,9 +71,11 @@ for (j in 1:length(p)) {
 }
 
 # NAs in sdm therefore represent a real failure
-# Delete columns with NAs (e.g. no too-slow trials)
+# Delete columns with NAs (e.g. no too-slow trials) if removeDeadCols option is T
+if (removeDeadCols == T) {
 if (sum(complete.cases(t(sdm))) < 40) print(paste("Deleting columns from subject", sub, "bold", bold))
 sdm = sdm[, complete.cases(t(sdm))] # returns only complete columns
+}
 
 # DEBUG COMMAND
 print (sum(complete.cases(sdm)))
@@ -76,7 +83,10 @@ if (sum(complete.cases(sdm)) < 158) badbolds = c(badbolds, paste("Subject", sub,
 #if (sum(complete.cases(sdm)) < 158) break
 
 # Add motion confounds and fourier confounds. 
-firstConfoundPredictor = dim(sdm)[2] + 1
+if (TooSlowConfound == T) {
+  firstConfoundPredictor = min(grep("Slow", colnames(sdm))[1], dim(sdm)[2] + 1, na.rm=T)
+} else firstConfoundPredictor = dim(sdm)[2] + 1
+
 zeroes = paste(rep(0, 3-nchar(sub)), sep="", collapse="")
 subSuffix = paste(zeroes, sub, sep="")
 motionFileDir = "./movement-files/"

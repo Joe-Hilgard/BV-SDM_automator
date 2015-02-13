@@ -1,0 +1,17 @@
+{
+    "contents" : "# checking to see if .rtc, .vvd files, etc are giving me same output\n\n#dat2.b1 = read.delim(\"./temp/WIT001_b1_Ventricle.rtc\", skip=9, header=F)\ndat1.b1 = read.delim(\"./temp/WIT001_b1_ventricleVOI.rtc\", skip=9, header=F)\ndat1.b2 = read.delim(\"./temp/WIT001_b2_ventricleVOI.rtc\", skip=9, header=F)\ndat1.b3 = read.delim(\"./temp/WIT001_b3_ventricleVOI.rtc\", skip=9, header=F)\ndat1.b4 = read.delim(\"./temp/WIT001_b4_ventricleVOI.rtc\", skip=9, header=F)\ndat1.b5 = read.delim(\"./temp/WIT001_b5_ventricleVOI.rtc\", skip=9, header=F)\ndat1.b6 = read.delim(\"./temp/WIT001_b6_ventricleVOI.rtc\", skip=9, header=F)\n\ndat = read.delim(\"./temp/WIT001_confoundVOI.vvd\", sep=\" \")\ndat.b1 = dat[1:158,1]\ndat.b2 = dat[1:158+158*1,1]\ndat.b3 = dat[1:158+158*2,1]\ndat.b4 = dat[1:158+158*3,1]\ndat.b5 = dat[1:158+158*4,1]\ndat.b6 = dat[1:158+158*5,1]\n\nsummary(dat.b1 - dat1.b1); hist(dat.b1 - dat1.b1[,1])\nsummary(dat.b2 - dat1.b2)\nsummary(dat.b3 - dat1.b3)\nsummary(dat.b4 - dat1.b4)\nsummary(dat.b5 - dat1.b5)\nsummary(dat.b6 - dat1.b6)\n\n# dat.b2 = dat[159:(159+157),1]\n# dat1.b2 = read.delim(\"./temp/WIT123_b2_Ventricle.rtc\", skip=9, header=F)\n# \n# summary(dat.b2 - dat1.b2)\n# \n# for (bold in 1:6) {\n#   startRow = 1+158*(bold-1); endRow = startRow+157\n#   print(c(bold, startRow, endRow))\n# }\n\ndat = read.delim(\"./temp/WIT123_confoundVOI.vvd\", sep=\" \")\ndat.b1 = dat[1:158,1]\ndat.b2 = dat[1:158+158*1,1]\ndat.b3 = dat[1:158+158*2,1]\ndat.b4 = dat[1:158+158*3,1]\ndat.b5 = dat[1:158+158*4,1]\ndat.b6 = dat[1:158+158*5,1]\n\ndat1.b1 = read.delim(\"./temp/WIT123_b1_ventricleVOI.rtc\", skip=9, header=F)\ndat1.b2 = read.delim(\"./temp/WIT123_b2_ventricleVOI.rtc\", skip=9, header=F)\ndat1.b3 = read.delim(\"./temp/WIT123_b3_ventricleVOI.rtc\", skip=9, header=F)\ndat1.b4 = read.delim(\"./temp/WIT123_b4_ventricleVOI.rtc\", skip=9, header=F)\ndat1.b5 = read.delim(\"./temp/WIT123_b5_ventricleVOI.rtc\", skip=9, header=F)\ndat1.b6 = read.delim(\"./temp/WIT123_b6_ventricleVOI.rtc\", skip=9, header=F)\n\nsummary(dat.b1 - dat1.b1); hist(dat.b1 - dat1.b1[,1])\nsummary(dat.b2 - dat1.b2)\nsummary(dat.b3 - dat1.b3)\nsummary(dat.b4 - dat1.b4)\nsummary(dat.b5 - dat1.b5)\nsummary(dat.b6 - dat1.b6)\n",
+    "created" : 1423774099463.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "1257161812",
+    "id" : "9B716492",
+    "lastKnownWriteTime" : 1423773498,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
