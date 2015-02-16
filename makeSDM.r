@@ -2,25 +2,16 @@
 # Check lines 35+ and 50+ for things that change according to length of p!
 # Also header info at line 90+
 
-# What's the deal with these ones that come back as zero complete cases?
-  # It's because they have zero trials that meet one of the conditions, e.g.
-  # They have zero too-slow trials! Not sure what I should do about that.
-  # If I drop that predictor, I add noise;
-    # If I don't drop it, I have singularity.
-# It seems that BV can handle it if I drop that predictor in just that one subject's SDM file.
-# No, it can't, but maybe I can include it as a confound instead of a predictor
-
 removeDeadCols = T # set to T if you think BV can handle different numbers of columns across SDM files.
 TooSlowConfound = T # set to T to treat TooSlow condition as confound. May allow diff #col across files.
 # Setting both these to TRUE does keep BV from barking at me, this is promising. 
 
-setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
+# setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
 # load predictor conditions:
 conditions = read.delim("conditions.txt", stringsAsFactors=F)
-protocol = "CurrentTrial"
 # First, name predictors & specify timepoints/predictor:
 p = c(conditions$predictor); 
-k = 10;
+k = 9;
 TRlength = 2000
 # Generate names vector based on that:
 predNames = paste(rep(p, each=k), "_D", rep(0:(k-1), length(p)), sep="")
@@ -28,12 +19,14 @@ predNames = paste(rep(p, each=k), "_D", rep(0:(k-1), length(p)), sep="")
 t = 158
 # badbolds vector for IDing SDMs featuring NAs
 badbolds = c()
+# badMotion data frame for IDing SDMs featuring excess raw motion
+badMotion = data.frame(NULL)
 # Fourier confounds
 fourier = read.table("./movement-files/Modified_Fourier.sdm", skip=8, header=T)
 fourier = fourier[,1:4] # Removing the "Constant" column b/c I think it results in singular matrix
 # read in the data
 megadata = read.delim("eprime_thesis_1fix.txt") # read in all the data at once
-
+dir.create("sdms")
 # then restrict it to just one subject's one bold
   # A loop would start about here, 
 for (sub in unique(megadata$Subject)) {
@@ -57,6 +50,7 @@ for (i in 1:length(conditions$condition)) {
   logicalTest = eval(parse(text=command))
   codes[[i]] = dat$TR[logicalTest]
 }
+names(codes) = conditions[,1]
 
 # Populate values of SDM
 #print(paste("Populating values of SDM file!"))
@@ -73,7 +67,7 @@ for (j in 1:length(p)) {
 # NAs in sdm therefore represent a real failure
 # Delete columns with NAs (e.g. no too-slow trials) if removeDeadCols option is T
 if (removeDeadCols == T) {
-if (sum(complete.cases(t(sdm))) < 40) print(paste("Deleting columns from subject", sub, "bold", bold))
+if (sum(complete.cases(t(sdm))) < k*length(p)) print(paste("Deleting columns from subject", sub, "bold", bold))
 sdm = sdm[, complete.cases(t(sdm))] # returns only complete columns
 }
 
@@ -104,11 +98,44 @@ if (length(list.files(motionFileDir, pattern=motionFileRTC)) > 0) {
                                 "Rotation_BV-X_deg", "Rotation_BV-Y_deg", "Rotation_BV-Z_deg"))
   }
 
-sdm = data.frame(sdm, motion, fourier)
-#sdm = format(sdm, nsmall=6) # I think BV is barfing because columns are 0 1 instead of 0.000000 1.000000
+# Check range of motion
+check = apply(motion, 2, FUN=max) - apply(motion, 2, FUN=min)
+if (sum(check>3)>0) {
+  print(paste("Excess motion in subject ", sub, ", bold ", bold, 
+              ", column ", names(check)[check>3], sep=""))
+  temp = data.frame("subject" = sub, "bold"=bold, "column"=names(check)[check>3])
+  badMotion = rbind(badMotion, temp)
+}
+
+# Standardize the motion
+motion = data.frame(scale(motion))
+
+# generate first derivatives
+# Could add a check here for spikes (e.g. throw an alarm if dx/dt exceeds 1 at any point)
+motion.deriv = apply(motion, 2, FUN=diff)
+motion.deriv = rbind(motion.deriv, 0) # append a zero at the end to coerce fit
+motion.deriv = scale(motion.deriv) # convert to z-scores
+# plot(1:dim(motion)[1], motion.deriv[,1], typ='l')
+colnames(motion.deriv) = paste(names(motion), "_dt", sep="")
+
+# Fetch VOI motion confound, make 1st derivatives of VOI, and append
+vvdFileName = paste("./vvd-files/WIT", subSuffix, "_confoundVOI.vvd", sep="")
+startRow = 1+158*(bold-1); endRow = startRow+157
+vvd = read.delim(vvdFileName, sep="", stringsAsFactors=F)[startRow:endRow,]
+vvd.deriv = apply(vvd, 2, FUN=diff)
+vvd.deriv = rbind(vvd.deriv, 0)
+vvd.deriv = scale(vvd.deriv)
+colnames(vvd.deriv) = paste(names(vvd), "_dt", sep="")
+vvd = scale(vvd)
+
+# Append the confounds
+sdm = data.frame(sdm, motion, motion.deriv, vvd, vvd.deriv, fourier)
+
+# Check matrix rank
+# stopifnot(qr(sdm)$rank == 40)
 
 # Okay! I think we're there. Just need to export it to a file and add the header.
-exportName = paste("./sdms/","WIT", subSuffix, "_b", bold, "_", protocol, ".sdm", sep="")
+exportName = paste("./sdms/","WIT", subSuffix, "_b", bold, ".sdm", sep="")
 #print(paste("Exporting to file", exportName)) # Check NrOfPredictors and FirstConfoundPredictor!!
 cat("FileVersion:             1
     
@@ -124,3 +151,4 @@ write.table(sdm, file=exportName, row.names=F, append=T)
   }
 }
 write(badbolds, file="badbolds.txt", ncolumns=1)
+write.table(badMotion, file="badMotion.txt", sep="\t", row.names=F)
