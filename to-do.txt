@@ -1,5 +1,7 @@
-Double-check accuracy of PRT matrix (e.g. are trials ending up on correct TRs?) by hand vs. by script vs by BV.
-This entails generating a PRT file, letting that generate the SDMs internally in brainvoyager, then comparing the script columns.
+Do I need a "constant" predictor a la BV, a column of only 1s?
+
+Running the single-subject SDMs might be beneficial for a sort of sanity check on single-run brain activity.
+Noting that it seems V1 activity peaks on lags 2 & 3 (and maybe 4) out of 0-8.
 
 Conduct 2x2x2+1 analysis.
 I wonder if every subject has every error type in every bold? I'm gonna guess not. Fuck my life.
@@ -11,3 +13,7 @@ Conduct sanity check by making VOI in V1 area. VOI -> VOI options - > get timeco
 Does e-prime log subject response post-deadline? Yes, logs accuracy up to 800ms latency despite 500ms response deadline. Logs no response at all as 0ms incorrect response.
 
 
+-- complete stuff --
+(1) Double-check accuracy of PRT matrix (e.g. are trials ending up on correct TRs?) by hand vs. by script vs by BV.
+This entails generating a PRT file, letting that generate the SDMs internally in brainvoyager, then comparing the script columns.
+RESOLVED: PRT files are now exported for debug. They've been correct all along. (0, 1) columns in SDMs also look correct but I could always check more files. BV SDM seems to have an extra row above header for listing off colors of predictors (e.g. 255 255 0)

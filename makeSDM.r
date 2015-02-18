@@ -129,7 +129,7 @@ colnames(vvd.deriv) = paste(names(vvd), "_dt", sep="")
 vvd = scale(vvd)
 
 # Append the confounds
-sdm = data.frame(sdm, motion, motion.deriv, vvd, vvd.deriv, fourier)
+sdm = data.frame(sdm, motion, motion.deriv, vvd, vvd.deriv, fourier, "constant"=1)
 
 # Check matrix rank
 # stopifnot(qr(sdm)$rank == 40)
