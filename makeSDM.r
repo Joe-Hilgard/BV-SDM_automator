@@ -134,6 +134,35 @@ sdm = data.frame(sdm, motion, motion.deriv, vvd, vvd.deriv, fourier)
 # Check matrix rank
 # stopifnot(qr(sdm)$rank == 40)
 
+# Create PRT for debug purposes
+dir.create("prts")
+PRTFileName = paste("./prts/WIT", subSuffix, "_b", bold, ".prt", sep="")
+cat("FileVersion:  2  	
+
+ResolutionofTime:	Volumes
+
+Experiment:	WIT
+
+BackgroundColor:	0 0 0		
+TextColor:	255 255 255
+TimeCourseColor:	255 255 255
+TimeCourseThick:	3
+ReferenceFuncColor:	0 0 80		
+ReferenceFuncThick: 	3	
+
+NrOfConditions: ",
+    length(codes),
+    file = PRTFileName)
+for (z in 1:length(codes)) {
+  m = matrix(rep(codes[[z]],2), ncol=2)
+  cat("\n\n",
+      names(codes)[z], "\n",
+      length(codes[[z]]), "\n",
+      file = PRTFileName, append=T)
+  write(t(m), file=PRTFileName, ncolumns=2, append=T)
+  cat("Color:", z, z, z, file=PRTFileName, append=T)
+}
+
 # Okay! I think we're there. Just need to export it to a file and add the header.
 exportName = paste("./sdms/","WIT", subSuffix, "_b", bold, ".sdm", sep="")
 #print(paste("Exporting to file", exportName)) # Check NrOfPredictors and FirstConfoundPredictor!!
