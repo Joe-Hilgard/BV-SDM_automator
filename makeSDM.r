@@ -21,6 +21,8 @@ t = 158
 badbolds = c()
 # badMotion data frame for IDing SDMs featuring excess raw motion
 badMotion = data.frame(NULL)
+# colinearity data frame for IDing colinear predictors
+colin = data.frame(NULL)
 # Fourier confounds
 fourier = read.table("./movement-files/Modified_Fourier.sdm", skip=8, header=T)
 fourier = fourier[,1:4] # Removing the "Constant" column b/c I think it results in singular matrix
@@ -28,7 +30,8 @@ fourier = fourier[,1:4] # Removing the "Constant" column b/c I think it results 
 megadata = read.delim("eprime_thesis_1fix.txt") # read in all the data at once
 dir.create("sdms")
 # then restrict it to just one subject's one bold
-  # A loop would start about here, 
+
+## BEGIN LOOP
 for (sub in unique(megadata$Subject)) {
   for (bold in 1:6) {
     print(paste("Retrieving data for subject", sub, "bold", bold))
@@ -126,13 +129,22 @@ vvd.deriv = apply(vvd, 2, FUN=diff)
 vvd.deriv = rbind(vvd.deriv, 0)
 vvd.deriv = scale(vvd.deriv)
 colnames(vvd.deriv) = paste(names(vvd), "_dt", sep="")
-vvd = scale(vvd)
+vvd = scale(vvd) 
 
 # Append the confounds
 sdm = data.frame(sdm, motion, motion.deriv, vvd, vvd.deriv, fourier, "constant"=1)
 
 # Check matrix rank
-# stopifnot(qr(sdm)$rank == 40)
+#stopifnot(qr(sdm)$rank == 40)
+tooBig = function(x) ifelse(.9 < max(abs(x[x<1]), na.rm=T), T, F)
+rowIndex = as.vector(apply(cor(sdm), 1, tooBig))
+colIndex = as.vector(apply(cor(sdm), 2, tooBig))
+trouble = cor(sdm)[rowIndex , colIndex]
+preds = colnames(trouble)
+if (!is.null(preds)) {
+  temp = data.frame("sub" = sub, "bold" = bold, "colinearPreds" = preds)
+  colin = rbind(colin, temp)
+}
 
 # Create PRT for debug purposes
 dir.create("prts")
@@ -170,7 +182,7 @@ cat("FileVersion:             1
     
     NrOfPredictors:          ", dim(sdm)[2],"
     NrOfDataPoints:          158
-    IncludesConstant:        0
+    IncludesConstant:        1
     FirstConfoundPredictor:   ",  firstConfoundPredictor, "    
     255 50 50   50 255 50   50 50 255   255 255 0   255 0 255   0 255 255
     ", 
@@ -179,5 +191,8 @@ cat("FileVersion:             1
 write.table(sdm, file=exportName, row.names=F, append=T)
   }
 }
+# Write debug logs
 write(badbolds, file="badbolds.txt", ncolumns=1)
 write.table(badMotion, file="badMotion.txt", sep="\t", row.names=F)
+write.table(colin, file="colinear_predictors.txt", sep="\t", row.names=F)
+table(colin$sub, colin$bold)

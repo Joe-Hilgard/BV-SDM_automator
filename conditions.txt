@@ -1,10 +1,4 @@
 predictor	condition
-BlackGunHit	"dat$TrialType == 'BlackGun' & (dat$Probe.ACC == 1) & dat$feedbackmask == 'fast'"
-BlackToolHit	"dat$TrialType == 'BlackTool' & (dat$Probe.ACC == 1) & dat$feedbackmask == 'fast'"
-WhiteGunHit	"dat$TrialType == 'WhiteGun' & (dat$Probe.ACC == 1) & dat$feedbackmask == 'fast'"
-WhiteToolHit	"dat$TrialType == 'WhiteTool' & (dat$Probe.ACC == 1) & dat$feedbackmask == 'fast'"
-BlackGunErr	"dat$TrialType == 'BlackGun' & (dat$Probe.ACC == 0) & dat$feedbackmask == 'fast'"
-BlackToolErr	"dat$TrialType == 'BlackTool' & (dat$Probe.ACC == 0) & dat$feedbackmask == 'fast'"
-WhiteGunErr	"dat$TrialType == 'WhiteGun' & (dat$Probe.ACC == 0) & dat$feedbackmask == 'fast'"
-WhiteToolErr	"dat$TrialType == 'WhiteTool' & (dat$Probe.ACC == 0) & dat$feedbackmask == 'fast'"
+Hit	"(dat$Probe.ACC == 1) & dat$feedbackmask == 'fast'"
+Err	"(dat$Probe.ACC == 0) & dat$feedbackmask == 'fast'"
 TooSlow	"dat$feedbackmask == 'slow'"
