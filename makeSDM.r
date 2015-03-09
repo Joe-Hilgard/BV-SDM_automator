@@ -26,6 +26,12 @@ fourier = read.table("./movement-files/Modified_Fourier.sdm", skip=8, header=T)
 fourier = fourier[,1:4] # Removing the "Constant" column b/c I think it results in singular matrix
 # read in the data
 megadata = read.delim("eprime_thesis_1fix.txt") # read in all the data at once
+# Make previous-trial columns
+megadata$Prev.ACC = c(megadata$Probe.ACC[-1], NA)
+megadata$Prev.ACC[megadata$SubTrial %in% c(NA, 1, 33+1)] = NA
+megadata$Prev.TrialType = c(megadata$TrialType[-1], NA)
+megadata$Prev.TrialType[megadata$SubTrial %in% c(NA, 1, 33+1)] = NA
+
 dir.create("sdms")
 # then restrict it to just one subject's one bold
   # A loop would start about here, 
