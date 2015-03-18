@@ -1,0 +1,5 @@
+predictor	condition
+BlackToolErr	"dat$TrialType %in% 'BlackTool' & dat$Probe.ACC %in% 0 & dat$feedbackmask %in% 'fast'"
+OtherErr	"dat$TrialType %in% c('BlackGun', 'WhiteGun', 'WhiteTool') & dat$Probe.ACC %in% 0 & dat$feedbackmask %in% 'fast'"
+Confound_Hit	"dat$Probe.ACC %in% 1"
+Confound_TooSlow	"dat$feedbackmask %in% 'slow'"

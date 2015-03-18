@@ -1,14 +1,15 @@
 # It seems like this will be easier to make from the ePrime file than from a PRT.
 # Check lines 35+ and 50+ for things that change according to length of p!
 # Also header info at line 90+
-
-removeDeadCols = T # set to T if you think BV can handle different numbers of columns across SDM files.
-TooSlowConfound = T # set to T to treat TooSlow condition as confound. May allow diff #col across files.
+library(tidyr)
+makeSDM = function(conditionsFile) {
+removeDeadCols = F # set to T if you think BV can handle different numbers of columns across SDM files.
+Confound = T # set to T to treat TooSlow condition as confound. May allow diff #col across files.
 # Setting both these to TRUE does keep BV from barking at me, this is promising. 
 
 # setwd("C:/data_2014/Thesis/prt_sdm_automation/BV-SDM_automator")
 # load predictor conditions:
-conditions = read.delim("conditions.txt", stringsAsFactors=F)
+conditions = read.delim(conditionsFile, stringsAsFactors=F)
 # First, name predictors & specify timepoints/predictor:
 p = c(conditions$predictor); 
 k = 9;
@@ -18,9 +19,11 @@ predNames = paste(rep(p, each=k), "_D", rep(0:(k-1), length(p)), sep="")
 # Specify number of volumes:
 t = 158
 # badbolds vector for IDing SDMs featuring NAs
-badbolds = c()
+badBolds = c()
 # badMotion data frame for IDing SDMs featuring excess raw motion
 badMotion = data.frame(NULL)
+# badSubs data frame for IDing subjects w/ insufficient trials
+badSubs = data.frame(NULL)
 # Fourier confounds
 fourier = read.table("./movement-files/Modified_Fourier.sdm", skip=8, header=T)
 fourier = fourier[,1:4] # Removing the "Constant" column b/c I think it results in singular matrix
@@ -35,6 +38,23 @@ megadata$Prev.feedbackmask = head(c(NA, megadata$feedbackmask), -1)
 megadata$Prev.feedbackmask[megadata$SubTrial %in% c(NA, 1, 33+1)] = NA
 # discard BlankProc trials
 megadata = megadata[!(megadata$Procedure.SubTrial. %in% "BlankProc"),]
+# Look for subjects w/ insufficient trial counts
+counts = matrix(0, nrow=length(unique(megadata$Subject)), ncol=nrow(conditions))
+counts = data.frame("Subject" = unique(megadata$Subject), counts)
+names(counts)[2:ncol(counts)] = conditions$predictor
+dat = megadata
+for (i in unique(dat$Subject)) {
+  for (j in 1:length(conditions$condition)) {
+  command = paste("sum(", conditions$condition[j], "& dat$Subject ==", i, ")")
+  value = eval(parse(text=command))
+  counts[counts$Subject == i,j+1] = value
+  }
+}
+# export suspect participants
+temp = gather(counts, Subject)
+temp = temp[temp$value < 10,]
+write.table(temp, file="badSubs.txt", row.names=F)
+
 # # debug command
 # View(megadata[, c("Subject", "Session", "SubTrial", "TrialList", 
 #                   "TrialType", "Probe.ACC", "Probe.RT", 
@@ -80,20 +100,23 @@ for (j in 1:length(p)) {
 }
 
 # NAs in sdm therefore represent a real failure
-# Delete columns with NAs (e.g. no too-slow trials) if removeDeadCols option is T
-if (removeDeadCols == T) {
-if (sum(complete.cases(t(sdm))) < k*length(p)) print(paste("Deleting columns from subject", sub, "bold", bold))
-sdm = sdm[, complete.cases(t(sdm))] # returns only complete columns
-}
+
+# Instead of doing this:
+# # Delete columns with NAs (e.g. no too-slow trials) if removeDeadCols option is T
+# if (removeDeadCols == T) {
+# if (sum(complete.cases(t(sdm))) < k*length(p)) print(paste("Deleting columns from subject", sub, "bold", bold))
+# sdm = sdm[, complete.cases(t(sdm))] # returns only complete columns
+# }
+
 
 # DEBUG COMMAND
 print (sum(complete.cases(sdm)))
-if (sum(complete.cases(sdm)) < 158) badbolds = c(badbolds, paste("Subject", sub, "Bold", bold))
+if (sum(complete.cases(sdm)) < 158) badBolds = c(badBolds, paste("Subject", sub, "Bold", bold))
 #if (sum(complete.cases(sdm)) < 158) break
 
 # Add motion confounds and fourier confounds. 
-if (TooSlowConfound == T) {
-  firstConfoundPredictor = min(grep("Slow", colnames(sdm))[1], dim(sdm)[2] + 1, na.rm=T)
+if (Confound == T) {
+  firstConfoundPredictor = min(grep("Confound", colnames(sdm))[1], dim(sdm)[2] + 1, na.rm=T)
 } else firstConfoundPredictor = dim(sdm)[2] + 1
 
 zeroes = paste(rep(0, 3-nchar(sub)), sep="", collapse="")
@@ -194,5 +217,6 @@ cat("FileVersion:             1
 write.table(sdm, file=exportName, row.names=F, append=T)
   }
 }
-write(badbolds, file="badbolds.txt", ncolumns=1)
-write.table(badMotion, file="badMotion.txt", sep="\t", row.names=F)
+write(badBolds, file=paste("badBolds_", conditionsFile, sep=""), ncolumns=1)
+write.table(badMotion, file=paste("badMotion_", conditionsFile, sep=""), sep="\t", row.names=F)
+}
