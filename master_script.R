@@ -1,3 +1,4 @@
 source("makeSDM.r")
 
-makeSDM("Conditions-ErrorType2.txt")
+makeSDM("conditions-prevAcc.txt")
+makeSDM("conditions-ErrorType2.txt")

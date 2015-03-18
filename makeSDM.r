@@ -28,7 +28,7 @@ badSubs = data.frame(NULL)
 fourier = read.table("./movement-files/Modified_Fourier.sdm", skip=8, header=T)
 fourier = fourier[,1:4] # Removing the "Constant" column b/c I think it results in singular matrix
 # read in the data
-megadata = read.delim("eprime_thesis_1fix.txt") # read in all the data at once
+megadata = read.delim("eprime_thesis_1fix.txt", stringsAsFactors=F) # read in all the data at once
 # Make previous-trial columns
 megadata$Prev.ACC = head(c(NA, megadata$Probe.ACC), -1)
 megadata$Prev.ACC[megadata$SubTrial %in% c(NA, 1, 33+1)] = NA
