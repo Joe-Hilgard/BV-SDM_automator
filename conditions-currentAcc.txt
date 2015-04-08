@@ -1,0 +1,4 @@
+predictor	condition
+Hit	"dat$Probe.ACC %in% c(1) & dat$feedbackmask %in% 'fast'"
+Err	"dat$Probe.ACC %in% c(0) & dat$feedbackmask %in% 'fast'"
+ConfoundTooSlow	"dat$Prev.feedbackmask %in% 'slow'"

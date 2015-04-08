@@ -118,9 +118,13 @@ makeSDM = function(conditionsFile) {
       
       
       # DEBUG COMMAND
-      print (sum(complete.cases(sdm)))
-      if (sum(complete.cases(sdm)) < 158) badBolds = c(badBolds, paste("Subject", sub, "Bold", bold))
-      #if (sum(complete.cases(sdm)) < 158) break
+      # This should be deprecated now that subjects don't need appropriate trials in every single BOLD,
+        # just >10 across all BOLDs.
+      # Yet I'm concerned about possible consequences of SDMs with variable #cols?
+        # I guess that's okay just to have a column of all zeroes...
+#       print (sum(complete.cases(sdm)))
+#       if (sum(complete.cases(sdm)) < 158) badBolds = c(badBolds, paste("Subject", sub, "Bold", bold))
+       #if (sum(complete.cases(sdm)) < 158) break
       
       # Add motion confounds and fourier confounds. 
       if (Confound == T) {
