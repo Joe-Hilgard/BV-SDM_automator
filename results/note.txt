@@ -1,0 +1,8 @@
+1.) Display and threshold whatever statistical map that you’re interested in.
+2.) Create VOIs from the clusters in the map: 
+    A.) Options Tab>>Convert Map Cluster to VOIs
+    B.) Reset cluster threshold to 200 (instead of default of 300), then click <GO>
+3.) VOI Analysis window will pop up. Identify the newly created VOI that you are interested in and make note of it.
+4.) Click <Options> near bottom right of VOI window.
+5.) An Options window will pop up. On 1st tab, specify your design matrix file.  On 2nd tab, highlight the VOI that you’re interested in and then click file output and follow prompts.
+The end result is a text file (*.vgd) that contains subject-by-subject estimates for each of the variable in your model.  You can use these to compute and plot average timecourses for each condition (as per the attached spreadsheet example).
