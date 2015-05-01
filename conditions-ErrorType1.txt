@@ -3,4 +3,4 @@ BlackGunErr	"dat$TrialType %in% 'BlackGun' & dat$Probe.ACC %in% 0 & dat$feedback
 BlackToolErr	"dat$TrialType %in% 'BlackTool' & dat$Probe.ACC %in% 0 & dat$feedbackmask %in% 'fast'"
 WhiteGunErr	"dat$TrialType %in% 'WhiteGun' & dat$Probe.ACC %in% 0 & dat$feedbackmask %in% 'fast'"
 WhiteToolErr	"dat$TrialType %in% 'WhiteTool' & dat$Probe.ACC %in% 0 & dat$feedbackmask %in% 'fast'"
-TooSlow	"dat$feedbackmask %in% 'slow' | dat$Probe.ACC %in% 1"
+ConfoundHitOrSlow	"dat$feedbackmask %in% 'slow' | dat$Probe.ACC %in% 1"

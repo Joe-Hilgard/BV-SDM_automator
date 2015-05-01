@@ -43,7 +43,6 @@ makeSDM = function(conditionsFile) {
   megadata$Prev.feedbackmask[megadata$SubTrial %in% c(NA, 1, 33+1)] = NA
   # discard BlankProc trials
   megadata = megadata[!(megadata$Procedure.SubTrial. %in% "BlankProc"),]
-  # Look for subjects w/ insufficient trial counts
   counts = matrix(0, nrow=length(unique(megadata$Subject)), ncol=nrow(conditions))
   counts = data.frame("Subject" = unique(megadata$Subject), counts)
   names(counts)[2:ncol(counts)] = conditions$predictor
@@ -60,7 +59,7 @@ makeSDM = function(conditionsFile) {
   temp = temp[temp$value < 10,]
   paste("badSubs_", suffix, ".txt",
         sep = "") %>%
-    write.table(temp, file = ., row.names=F)
+    write.table(temp, file = ., row.names=F, sep="\t")
   
   # # debug command
   # View(megadata[, c("Subject", "Session", "SubTrial", "TrialList", 
@@ -104,6 +103,8 @@ makeSDM = function(conditionsFile) {
           currCol = (j-1)*k + i
           sdm[peak,currCol] = 1 # fill in the peaks
           sdm[-peak, currCol] = 0 # fill in the zeroes
+          # Fill whole column w/ zero in case of zero trials in a bin
+          if (length(peak) == 0) sdm[ , currCol] = 0 
         }
       }
       
@@ -122,7 +123,7 @@ makeSDM = function(conditionsFile) {
         # just >10 across all BOLDs.
       # Yet I'm concerned about possible consequences of SDMs with variable #cols?
         # I guess that's okay just to have a column of all zeroes...
-#       print (sum(complete.cases(sdm)))
+       print (sum(complete.cases(sdm))) # shouldn't be any NAs, even an empty col is 0
 #       if (sum(complete.cases(sdm)) < 158) badBolds = c(badBolds, paste("Subject", sub, "Bold", bold))
        #if (sum(complete.cases(sdm)) < 158) break
       
