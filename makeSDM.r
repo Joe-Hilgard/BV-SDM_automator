@@ -224,8 +224,7 @@ NrOfConditions: ",
     NrOfDataPoints:          158
     IncludesConstant:        1
     FirstConfoundPredictor:   ",  firstConfoundPredictor, "    
-    255 50 50   50 255 50   50 50 255   255 255 0   255 0 255   0 255 255
-    ", 
+    255 50 50   50 255 50   50 50 255   255 255 0   255 0 255   0 255 255 \n", 
           file=exportName
       )
       write.table(sdm, file=exportName, row.names=F, append=T)
